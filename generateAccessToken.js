@@ -1,9 +1,19 @@
 const jwt = require("jsonwebtoken");
 const mysql = require("mysql2");
 const bcrypt = require("bcrypt");
+const CryptoJS = require("crypto-js");
 
 const generateAccessToken = (user) => {
-  return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
+  var ciphertext = CryptoJS.AES.encrypt(
+    JSON.stringify(user),
+    process.env.ACCESS_TOKEN_SECRET
+  ).toString();
+
+  console.log(ciphertext);
+
+  return jwt.sign({ data: ciphertext }, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: "15m",
+  });
 };
 
 exports.UserLogin = (req, res) => {
@@ -26,9 +36,10 @@ exports.UserLogin = (req, res) => {
         if (bcrypt.compare(password, hashedPassword)) {
           console.log("---------> Login Successful");
           console.log("---------> Generating accessToken");
-          const token = generateAccessToken({ user: user });
-          console.log(token);
-          res.json({ accessToken: token });
+          //const token = generateAccessToken({ user: user });
+
+          console.log(result);
+          res.json({ accessToken: result });
         } else {
           res.send("Password incorrect!");
         } //end of Password incorrect
